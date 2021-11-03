@@ -8,7 +8,7 @@ import (
 func Setup(e *echo.Echo) {
 	// product
 	e.GET("/stocks", GetAllProductsNotDeleted)
-	e.GET("/stocks/filter", nil)
+	e.GET("/stocks/filter", FilterProducts)
 	e.POST("/stock/insert", SaveProduct)
 	e.PUT("/stock/:id/update", UpdateProduct)
 	e.DELETE("/stock/:id/delete", DeleteProduct)

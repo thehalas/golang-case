@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm/clause"
 	"net/http"
 	. "vatansoft-golang-case/database"
 	. "vatansoft-golang-case/models"
@@ -12,7 +11,8 @@ import (
 func GetAllProductsNotDeleted(c echo.Context) error {
 	var products []Product
 	DB.
-		Preload(clause.Associations).
+		Preload("ProductProperties.Property").
+		Preload("Category").
 		Where("is_deleted = 0").
 		Find(&products)
 	return c.JSON(http.StatusOK, &products)
@@ -20,7 +20,10 @@ func GetAllProductsNotDeleted(c echo.Context) error {
 
 func GetProductById(c echo.Context) error {
 	var product Product
-	if err := DB.Preload(clause.Associations).First(&product, c.Param("id")).Error; err != nil {
+	if err := DB.
+		Preload("ProductProperties.Property").
+		Preload("Category").
+		First(&product, c.Param("id")).Error; err != nil {
 		fmt.Println(err)
 		return c.JSON(http.StatusNotFound, "error")
 	}
@@ -37,13 +40,13 @@ func SaveProduct(c echo.Context) error {
 		fmt.Println(err)
 		return c.JSON(http.StatusBadRequest, "error")
 	}
-	if 	err := DB.Model(&product).
+	if err := DB.Model(&product).
 		Association("Category").
 		Find(&product.Category); err != nil {
 		fmt.Println(err)
 		return c.JSON(http.StatusBadRequest, "error")
 	}
-	if 	err := DB.Model(&product).
+	if err := DB.Model(&product).
 		Preload("Property").
 		Association("ProductProperties").
 		Find(&product.ProductProperties); err != nil {
@@ -70,7 +73,7 @@ func UpdateProduct(c echo.Context) error {
 		fmt.Println(err)
 		return c.JSON(http.StatusInternalServerError, "error")
 	}
-	if 	err := DB.Model(&product).
+	if err := DB.Model(&product).
 		Preload("Property").
 		Association("ProductProperties").
 		Find(&product.ProductProperties); err != nil {
